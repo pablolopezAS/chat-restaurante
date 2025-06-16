@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Restaurante</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #e0e7ef;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 400px;
+      height: 90vh;
+      background: #f9fbfc;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background-color: #1f3b64;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #d0e5ff;
+      color: #003366;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #e2e8f0;
+      color: #2d3748;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #cbd5e0;
+      background: #ffffff;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 20px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .chat-input button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      background-color: #1f3b64;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .chat-input button:hover {
+      background-color: #274877;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">Asistente del Restaurante</div>
+    <div class="chat-box" id="chatbox"></div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="Escribe tu mensaje..." />
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const userText = input.value.trim();
+      if (!userText) return;
+      appendMessage("user", userText);
+      input.value = "";
+
+      try {
+        const res = await fetch("wf7x59u2gpgdsrq2hdet253qm2jjg5p1@hook.eu2.make.com", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userText })
+        });
+
+        const data = await res.json();
+        appendMessage("bot", data.reply || "Lo siento, hubo un error.");
+      } catch (err) {
+        appendMessage("bot", "⚠️ Error de conexión.");
+      }
+    }
+  </script>
+</body>
+</html>
