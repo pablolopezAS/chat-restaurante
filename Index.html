@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat IA Restaurante</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f9f9f9;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  #chat {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 5px;
+  }
+  .message {
+    margin: 10px 0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+  .user {
+    background-color: #d0e6ff;
+    color: #003366;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+  .bot {
+    background-color: #e6f2d9;
+    color: #336600;
+    align-self: flex-start;
+    margin-right: auto;
+  }
+  #inputArea {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  #inputArea input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  #inputArea button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #337ab7;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  #inputArea button:disabled {
+    background-color: #aac9e9;
+    cursor: not-allowed;
+  }
+  #chatContainer {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+</head>
+<body>
+
+<h1>Chat IA Restaurante</h1>
+
+<div id="chatContainer">
+  <div id="chat"></div>
+
+  <div id="inputArea">
+    <input type="text" id="userInput" placeholder="Escribe tu pregunta aquí..." autocomplete="off" />
+    <button id="sendBtn">Enviar</button>
+  </div>
+</div>
+
+<script>
+  const WEBHOOK_URL = 'https://hook.eu2.make.com/grnd6brjosb7cpfxnbb4hw2sjjs1fg0s';
+
+  const chatDiv = document.getElementById('chat');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  function appendMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message', sender);
+    msgDiv.textContent = text;
+    chatDiv.appendChild(msgDiv);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    appendMessage(text, 'user');
+    userInput.value = '';
+    sendBtn.disabled = true;
+    userInput.disabled = true;
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+
+      if (!res.ok) throw new Error('Error en la comunicación');
+
+      const data = await res.json();
+
+      appendMessage(data.response || 'No se recibió respuesta', 'bot');
+    } catch (e) {
+      appendMessage('Error al conectar con el servidor', 'bot');
+    } finally {
+      sendBtn.disabled = false;
+      userInput.disabled = false;
+      userInput.focus();
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  userInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // Opcional: pon foco en el input al cargar la página
+  userInput.focus();
+</script>
+
+</body>
+</html>
