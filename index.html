@@ -1,143 +1,278 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Chat IA Restaurante</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background: #f9f9f9;
-  }
-  h1 {
-    text-align: center;
-    color: #333;
-  }
-  #chat {
-    border: 1px solid #ccc;
-    padding: 10px;
-    height: 300px;
-    overflow-y: auto;
-    background: #fff;
-    border-radius: 5px;
-  }
-  .message {
-    margin: 10px 0;
-    padding: 8px 12px;
-    border-radius: 15px;
-    max-width: 70%;
-    word-wrap: break-word;
-  }
-  .user {
-    background-color: #d0e6ff;
-    color: #003366;
-    align-self: flex-end;
-    margin-left: auto;
-  }
-  .bot {
-    background-color: #e6f2d9;
-    color: #336600;
-    align-self: flex-start;
-    margin-right: auto;
-  }
-  #inputArea {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-  }
-  #inputArea input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  #inputArea button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    background-color: #337ab7;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  #inputArea button:disabled {
-    background-color: #aac9e9;
-    cursor: not-allowed;
-  }
-  #chatContainer {
-    display: flex;
-    flex-direction: column;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante</title>
+    <style>
+        /* --- Estilos Generales y Reset --- */
+        :root {
+            --primary-blue: #0d47a1; /* Azul oscuro para el header */
+            --secondary-blue: #42a5f5; /* Azul claro para mensajes de usuario */
+            --light-gray: #f5f5f5;   /* Fondo del chat */
+            --medium-gray: #e0e0e0;  /* Mensajes de la IA */
+            --dark-gray: #333;       /* Texto principal */
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--light-gray);
+        }
+
+        /* --- Contenedor Principal del Chat --- */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Encabezado --- */
+        header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        /* --- Caja de Mensajes --- */
+        #chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: var(--light-gray);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        /* --- Mensajes del Usuario (derecha) --- */
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--secondary-blue);
+            color: var(--white);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* --- Mensajes de la IA (izquierda) --- */
+        .ai-message {
+            align-self: flex-start;
+            background-color: var(--medium-gray);
+            color: var(--dark-gray);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* --- Indicador de "Escribiendo" --- */
+        .typing-indicator {
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 2px;
+            background-color: #9e9e9e;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+
+        /* --- Formulario de Entrada --- */
+        #chat-form {
+            display: flex;
+            padding: 15px;
+            background-color: var(--white);
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 5px rgba(66, 165, 245, 0.5);
+        }
+
+        #chat-form button {
+            padding: 12px 20px;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #chat-form button:hover {
+            background-color: #0b3d8f; /* Un azul un poco más oscuro al pasar el ratón */
+        }
+
+    </style>
 </head>
 <body>
 
-<h1>Chat IA Restaurante</h1>
+    <div class="chat-container">
+        <header>
+            Chat de Recomendaciones
+        </header>
 
-<div id="chatContainer">
-  <div id="chat"></div>
+        <div id="chat-box">
+            <!-- Los mensajes del chat se añadirán aquí dinámicamente -->
+        </div>
 
-  <div id="inputArea">
-    <input type="text" id="userInput" placeholder="Escribe tu pregunta aquí..." autocomplete="off" />
-    <button id="sendBtn">Enviar</button>
-  </div>
-</div>
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Pregunta por un plato..." autocomplete="off" required>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
 
-<script>
-  const WEBHOOK_URL = 'https://hook.eu2.make.com/grnd6brjosb7cpfxnbb4hw2sjjs1fg0s';
+    <script>
+        // --- SELECCIÓN DE ELEMENTOS DEL DOM ---
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
 
-  const chatDiv = document.getElementById('chat');
-  const userInput = document.getElementById('userInput');
-  const sendBtn = document.getElementById('sendBtn');
+        // =======================================================================
+        // == INSTRUCCIÓN IMPORTANTE: PEGA AQUÍ EL ENLACE DE TU WEBHOOK DE MAKE ==
+        // =======================================================================
+        const WEBHOOK_URL = 'DEJA_ESTE_TEXTO_Y_PEGA_AQUÍ_TU_URL_DEL_WEBHOOK';
+        // =======================================================================
 
-  function appendMessage(text, sender) {
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('message', sender);
-    msgDiv.textContent = text;
-    chatDiv.appendChild(msgDiv);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-  }
 
-  async function sendMessage() {
-    const text = userInput.value.trim();
-    if (!text) return;
+        // --- EVENT LISTENER PARA EL ENVÍO DEL FORMULARIO ---
+        chatForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Evita que la página se recargue
 
-    appendMessage(text, 'user');
-    userInput.value = '';
-    sendBtn.disabled = true;
-    userInput.disabled = true;
+            const userMessage = userInput.value.trim();
+            if (userMessage === '') return;
 
-    try {
-      const res = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
-      });
+            // 1. Mostrar el mensaje del usuario en el chat
+            addMessage(userMessage, 'user');
+            userInput.value = ''; // Limpiar el campo de entrada
 
-      if (!res.ok) throw new Error('Error en la comunicación');
+            // 2. Mostrar el indicador de "escribiendo"
+            showTypingIndicator();
 
-      const data = await res.json();
+            try {
+                // 3. Enviar el mensaje al webhook de Make
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    // Asegúrate que tu escenario en Make espera un JSON con la clave "pregunta"
+                    body: JSON.stringify({ pregunta: userMessage }),
+                });
 
-      appendMessage(data.response || 'No se recibió respuesta', 'bot');
-    } catch (e) {
-      appendMessage('Error al conectar con el servidor', 'bot');
-    } finally {
-      sendBtn.disabled = false;
-      userInput.disabled = false;
-      userInput.focus();
-    }
-  }
+                // Si la respuesta del servidor no es 'OK' (ej: error 500)
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
 
-  sendBtn.addEventListener('click', sendMessage);
-  userInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendMessage();
-  });
+                // 4. Recibir y procesar la respuesta de Make
+                const data = await response.json();
+                
+                // Asegúrate que tu módulo "Webhook Response" en Make devuelve un JSON con la clave "respuesta"
+                const aiMessage = data.respuesta; 
 
-  // Opcional: pon foco en el input al cargar la página
-  userInput.focus();
-</script>
+                // 5. Ocultar el indicador y mostrar la respuesta de la IA
+                hideTypingIndicator();
+                addMessage(aiMessage, 'ai');
+
+            } catch (error) {
+                console.error('Error al conectar con el Webhook:', error);
+                hideTypingIndicator();
+                addMessage('Lo siento, no he podido contactar con nuestro chef. Inténtalo de nuevo en un momento.', 'ai');
+            }
+        });
+
+        /**
+         * Añade un mensaje a la caja de chat.
+         * @param {string} text - El texto del mensaje.
+         * @param {string} sender - Quién envía el mensaje ('user' o 'ai').
+         */
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement);
+
+            // Hacer scroll hasta el final para ver el último mensaje
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        /**
+         * Muestra la animación de "escribiendo".
+         */
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.classList.add('message', 'typing-indicator');
+            indicator.id = 'typing-indicator';
+            indicator.innerHTML = '<span></span><span></span><span></span>';
+            chatBox.appendChild(indicator);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        /**
+         * Oculta la animación de "escribiendo".
+         */
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // --- Mensaje de Bienvenida Inicial ---
+        window.addEventListener('load', () => {
+            addMessage('¡Hola! Soy tu asistente virtual. ¿Qué te apetece comer hoy? Puedo recomendarte platos de nuestra carta.', 'ai');
+        });
+
+    </script>
 
 </body>
 </html>
